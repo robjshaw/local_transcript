@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Audio Transcription & Summary Tool</title>
+    <link href="styles/output.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-legal-blue mb-4">
+                <i class="fas fa-shield-alt mr-3"></i>
+                Legal Audio Transcription Suite
+            </h1>
+            <p class="text-legal-gray text-lg">Secure local processing for sensitive legal recordings</p>
+            <div class="mt-4 flex justify-center">
+                <div class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+                    <i class="fas fa-lock mr-2"></i>
+                    100% Local Processing - No External APIs
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Processing Card -->
+        <div class="card mb-8">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-legal-blue rounded-full p-3">
+                    <i class="fas fa-microphone text-white text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-semibold text-legal-gray">Audio Processing Pipeline</h2>
+                    <p class="text-gray-600">Upload, convert, transcribe, and summarize legal discussions</p>
+                </div>
+            </div>
+
+            <!-- File Upload Section -->
+            <div class="mb-8">
+                <label class="block text-lg font-medium text-legal-gray mb-4">
+                    <i class="fas fa-file-audio mr-2"></i>
+                    Step 1: Select Audio File (.m4a)
+                </label>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-legal-blue transition-colors duration-200" id="dropZone">
+                    <input type="file" id="audioFile" accept=".m4a" class="hidden">
+                    <div class="mb-4">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-lg text-legal-gray mb-2">Drop your .m4a file here or click to browse</p>
+                        <p class="text-sm text-gray-500">Maximum file size: 500MB</p>
+                    </div>
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('audioFile').click()">
+                        <i class="fas fa-folder-open mr-2"></i>
+                        Select File
+                    </button>
+                </div>
+                <div id="fileInfo" class="hidden mt-4 p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-file-audio text-legal-blue text-xl"></i>
+                        <div>
+                            <p class="font-medium text-legal-blue" id="fileName"></p>
+                            <p class="text-sm text-gray-600" id="fileSize"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Information -->
+            <div class="mb-8">
+                <label class="block text-lg font-medium text-legal-gray mb-4">
+                    <i class="fas fa-user-tie mr-2"></i>
+                    Client Information (Optional)
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="clientName" placeholder="Client Name" class="input-field">
+                    <input type="text" id="caseNumber" placeholder="Case Number" class="input-field">
+                </div>
+                <textarea id="meetingNotes" placeholder="Meeting context or notes..." class="input-field mt-4" rows="3"></textarea>
+            </div>
+
+            <!-- Process Button -->
+            <div class="text-center mb-8">
+                <button id="processBtn" class="btn-primary text-lg px-8 py-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fas fa-play mr-2"></i>
+                    Start Processing Pipeline
+                </button>
+            </div>
+        </div>
+
+        <!-- Processing Status -->
+        <div id="statusCard" class="card hidden">
+            <h3 class="text-xl font-semibold text-legal-gray mb-6">
+                <i class="fas fa-cogs mr-2"></i>
+                Processing Status
+            </h3>
+
+            <!-- Status Steps -->
+            <div class="space-y-4">
+                <div id="step1" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-medium text-gray-600">1</span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-legal-gray">Audio Conversion (M4A → WAV)</p>
+                            <p class="text-sm text-gray-600">Converting to compatible format using FFmpeg</p>
+                        </div>
+                    </div>
+                    <div class="status-indicator status-pending" id="status1">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending</span>
+                    </div>
+                </div>
+
+                <div id="step2" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-medium text-gray-600">2</span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-legal-gray">Speech Transcription</p>
+                            <p class="text-sm text-gray-600">Processing audio through Whisper CLI</p>
+                        </div>
+                    </div>
+                    <div class="status-indicator status-pending" id="status2">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending</span>
+                    </div>
+                </div>
+
+                <div id="step3" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-medium text-gray-600">3</span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-legal-gray">Discussion Summary</p>
+                            <p class="text-sm text-gray-600">Generating summary using Ollama</p>
+                        </div>
+                    </div>
+                    <div class="status-indicator status-pending" id="status3">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending</span>
+                    </div>
+                </div>
+
+                <div id="step4" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-medium text-gray-600">4</span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-legal-gray">HubSpot Integration</p>
+                            <p class="text-sm text-gray-600">Attach to client file (optional)</p>
+                        </div>
+                    </div>
+                    <div class="status-indicator status-pending" id="status4">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mt-6">
+                <div class="bg-gray-200 rounded-full h-3">
+                    <div id="progressBar" class="bg-legal-blue h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p class="text-sm text-gray-600 mt-2 text-center" id="progressText">Ready to start</p>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsCard" class="card hidden">
+            <h3 class="text-xl font-semibold text-legal-gray mb-6">
+                <i class="fas fa-file-alt mr-2"></i>
+                Processing Results
+            </h3>
+
+            <!-- Transcription Results -->
+            <div class="mb-6">
+                <h4 class="text-lg font-medium text-legal-gray mb-3">
+                    <i class="fas fa-quote-left mr-2"></i>
+                    Full Transcription
+                </h4>
+                <div class="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                    <pre id="transcriptionText" class="whitespace-pre-wrap text-sm text-legal-gray font-mono">Transcription will appear here...</pre>
+                </div>
+                <div class="mt-2 flex gap-2">
+                    <button class="btn-secondary text-sm" onclick="copyToClipboard('transcriptionText')">
+                        <i class="fas fa-copy mr-2"></i>Copy
+                    </button>
+                    <button class="btn-secondary text-sm" onclick="downloadText('transcription')">
+                        <i class="fas fa-download mr-2"></i>Download
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Results -->
+            <div class="mb-6">
+                <h4 class="text-lg font-medium text-legal-gray mb-3">
+                    <i class="fas fa-list-ul mr-2"></i>
+                    Discussion Summary
+                </h4>
+                <div class="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                    <div id="summaryText" class="text-sm text-legal-gray">Summary will appear here...</div>
+                </div>
+                <div class="mt-2 flex gap-2">
+                    <button class="btn-secondary text-sm" onclick="copyToClipboard('summaryText')">
+                        <i class="fas fa-copy mr-2"></i>Copy
+                    </button>
+                    <button class="btn-secondary text-sm" onclick="downloadText('summary')">
+                        <i class="fas fa-download mr-2"></i>Download
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4 pt-4 border-t border-gray-200">
+                <button class="btn-primary flex-1" onclick="resetApp()">
+                    <i class="fas fa-redo mr-2"></i>
+                    Process Another File
+                </button>
+                <!-- HubSpot integration disabled for now -->
+                <!--
+                <button id="hubspotBtn" class="btn-secondary flex-1" onclick="attachToHubspot()">
+                    <i class="fas fa-paperclip mr-2"></i>
+                    Attach to HubSpot
+                </button>
+                -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
